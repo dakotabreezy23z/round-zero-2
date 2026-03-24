@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>ROUND ZERO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --teal: #0ABFBC;
+    --card: rgba(255,255,255,0.12);
+    --card-border: rgba(255,255,255,0.2);
+    --card-active: rgba(255,255,255,0.22);
+    --white: #ffffff;
+    --faint: rgba(255,255,255,0.55);
+    --danger: #FF4444;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    height: 100%;
+    font-family: 'Barlow Condensed', sans-serif;
+    background: var(--teal);
+    color: var(--white);
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+  }
+
+  .screen {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    background: var(--teal);
+  }
+  .screen.active { opacity: 1; pointer-events: all; }
+
+  /* ── HOME ── */
+  #screen-home {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 28px 52px;
+  }
+  .home-logo {
+    font-size: 88px;
+    font-weight: 900;
+    letter-spacing: 14px;
+    color: var(--white);
+    text-align: center;
+    line-height: 0.92;
+    margin-bottom: 12px;
+  }
+  .home-sub {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 5px;
+    color: var(--faint);
+    text-align: center;
+    margin-bottom: 56px;
+  }
+  .home-menu { width: 100%; display: flex; flex-direction: column; gap: 14px; }
+  .home-btn {
+    background: var(--card);
+    border: 1.5px solid var(--card-border);
+    border-radius: 16px;
+    padding: 22px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: background 0.12s, transform 0.1s;
+  }
+  .home-btn:active { background: var(--card-active); transform: scale(0.98); }
+  .home-btn-left { display: flex; flex-direction: column; gap: 3px; }
+  .home-btn-title { font-size: 22px; font-weight: 800; letter-spacing: 3px; color: var(--white); text-transform: uppercase; }
+  .home-btn-sub { font-size: 13px; color: var(--faint); font-family: 'Barlow', sans-serif; }
+  .home-btn-arrow { color: var(--faint); font-size: 22px; }
+
+  /* ── SELECT WORKOUT (Quick Start sub-screen) ── */
+  #screen-select {
+    display: flex;
+    flex-direction: column;
+  }
+  .select-menu {
+    padding: 8px 20px 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .select-btn {
+    background: var(--card);
+    border: 1.5px solid var(--card-border);
+    border-radius: 16px;
+    padding: 28px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: background 0.12s, transform 0.1s;
+  }
+  .select-btn:active { background: var(--card-active); transform: scale(0.98); }
+  .select-btn-left { display: flex; flex-direction: column; gap: 4px; }
+  .select-btn-title { font-size: 28px; font-weight: 900; letter-spacing: 4px; color: var(--white); text-transform: uppercase; }
+  .select-btn-sub { font-size: 13px; color: var(--faint); font-family: 'Barlow', sans-serif; }
+  .select-btn-arrow { color: var(--faint); font-size: 24px; }
+
+  /* ── HEADER ── */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 56px 20px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--teal);
+  }
+  .header-title {
+    font-size: 44px;
+    font-weight: 900;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    flex: 1;
+    text-align: center;
+    color: var(--white);
+  }
+  .header-back, .header-action {
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 26px; color: var(--white);
+    background: none; border: none; padding: 0;
+    transition: transform 0.1s;
+  }
+  .header-back:active, .header-action:active { transform: scale(0.88); }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--card);
+    border: 1.5px solid var(--card-border);
+    border-radius: 14px;
+    transition: background 0.12s, transform 0.1s;
+  }
+  .card:active { background: var(--card-active); transform: scale(0.98); }
+
+  /* ── RANDOM BTN ── */
+  .random-btn {
+    margin: 4px 20px 12px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+  }
+  .random-die {
+    width: 28px; height: 28px;
+    background: var(--white);
+    border-radius: 5px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    padding: 5px;
+    flex-shrink: 0;
+  }
+  .die-dot {
+    width: 5px; height: 5px;
+    background: var(--teal);
+    border-radius: 50%;
+    align-self: center;
+    justify-self: center;
+  }
+  .die-dot:nth-child(1) { grid-column:1; grid-row:1; }
+  .die-dot:nth-child(2) { grid-column:2; grid-row:2; }
+  .die-dot:nth-child(3) { grid-column:3; grid-row:3; }
+  .random-label { font-size: 18px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* ── WORKOUT LIST ── */
+  .workout-list { padding: 0 20px 48px; display: flex; flex-direction: column; gap: 10px; }
+  .workout-card { padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+  .workout-card-name { font-size: 20px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; }
+  .workout-card-meta { font-size: 13px; color: var(--faint); margin-top: 3px; font-family: 'Barlow', sans-serif; }
+  .workout-card-right { display: flex; align-items: center; gap: 12px; }
+  .star-btn { background: none; border: none; font-size: 22px; cursor: pointer; padding: 4px; color: var(--white); transition: transform 0.12s; }
+  .star-btn:active { transform: scale(1.35); }
+  .card-arrow { color: var(--faint); font-size: 20px; }
+
+  .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 40px; gap: 12px; opacity: 0.5; }
+  .empty-text { font-size: 16px; font-weight: 500; letter-spacing: 1px; color: var(--white); text-align: center; font-family: 'Barlow', sans-serif; }
+
+  /* ── DETAIL ── */
+  .detail-params { padding: 0 20px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+  .param-row { padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; }
+  .param-label { font-size: 14px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--faint); }
+  .param-value { font-size: 18px; font-weight: 800; letter-spacing: 1px; }
+  .detail-exercises-title { padding: 0 20px 10px; font-size: 13px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--faint); }
+  .exercise-list { padding: 0 20px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+  .exercise-row { padding: 16px 20px; display: flex; align-items: center; gap: 16px; }
+  .exercise-num { font-size: 14px; font-weight: 600; color: var(--faint); width: 20px; text-align: center; }
+  .exercise-name { font-size: 18px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; }
+  .detail-total { text-align: center; padding: 14px; font-size: 15px; color: var(--faint); font-family: 'Barlow', sans-serif; }
+  .detail-actions { padding: 0 20px 48px; display: flex; flex-direction: column; gap: 12px; }
+
+  /* ── BUTTONS ── */
+  .btn-start {
+    width: 100%;
+    background: var(--card);
+    color: var(--white);
+    border: 1.5px solid var(--card-border);
+    border-radius: 16px;
+    padding: 20px;
+    font-size: 18px; font-weight: 900; letter-spacing: 4px;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-family: 'Barlow Condensed', sans-serif;
+    transition: background 0.12s, color 0.12s, border-color 0.12s, transform 0.1s;
+  }
+  .btn-start:active { background: var(--white); color: var(--teal); border-color: var(--white); transform: scale(0.97); }
+
+  .btn-secondary {
+    width: 100%;
+    background: var(--card);
+    color: var(--white);
+    border: 1.5px solid var(--card-border);
+    border-radius: 16px;
+    padding: 18px;
+    font-size: 16px; font-weight: 700; letter-spacing: 3px;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-family: 'Barlow Condensed', sans-serif;
+    transition: background 0.12s, transform 0.1s;
+  }
+  .btn-secondary:active { background: var(--card-active); transform: scale(0.97); }
+
+  .btn-danger {
+    width: 100%;
+    background: transparent;
+    color: var(--danger);
+    border: 1.5px solid var(--danger);
+    border-radius: 16px;
+    padding: 18px;
+    font-size: 16px; font-weight: 700; letter-spacing: 3px;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-family: 'Barlow Condensed', sans-serif;
+    transition: background 0.12s, transform 0.1s;
+  }
+  .btn-danger:active { background: rgba(255,68,68,0.15); transform: scale(0.97); }
+
+  /* ── SLIDERS ── */
+  .setup-body { padding: 8px 24px 16px; }
+  .setup-footer { padding: 0 24px 48px; }
+  .slider-group { margin-bottom: 28px; }
+  .slider-label { font-size: 13px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--faint); text-align: center; margin-bottom: 4px; }
+  .slider-value { font-size: 36px; font-weight: 900; color: var(--white); text-align: center; line-height: 1.1; margin-bottom: 10px; }
+  .slider-value span { font-size: 18px; font-weight: 600; color: var(--faint); margin-left: 2px; }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%; height: 4px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 2px; outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 30px; height: 30px;
+    border-radius: 6px;
+    background: var(--white);
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+
+  /* ── COUNTDOWN OPTIONS ── */
+  .countdown-options { display: flex; gap: 10px; }
+  .countdown-opt {
+    flex: 1;
+    background: var(--card);
+    border: 1.5px solid var(--card-border);
+    border-radius: 12px;
+    padding: 14px 8px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 18px; font-weight: 800; letter-spacing: 1px;
+    color: var(--faint);
+    transition: all 0.12s;
+    font-family: 'Barlow Condensed', sans-serif;
+  }
+  .countdown-opt:active { transform: scale(0.96); }
+  .countdown-opt.selected { background: var(--white); color: var(--teal); border-color: var(--white); }
+
+  .setup-total { text-align: center; font-size: 15px; color: var(--faint); font-family: 'Barlow', sans-serif; margin-bottom: 24px; }
+
+  /* ── CREATE INPUTS ── */
+  .ex-input {
+    background: none; border: none; outline: none;
+    color: var(--white); font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px; font-weight: 800; letter-spacing: 1.5px;
+    text-transform: uppercase; flex: 1; width: 100%;
+  }
+  .ex-input::placeholder { color: var(--faint); }
+  .create-name-input {
+    width: 100%;
+    background: var(--card);
+    border: 1.5px solid var(--card-border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    color: var(--white);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 22px; font-weight: 800; letter-spacing: 2px;
+    text-transform: uppercase; outline: none; text-align: center;
+  }
+  .create-name-input::placeholder { color: var(--faint); }
+
+  /* ── MODALS ── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: flex; align-items: flex-end; justify-content: center;
+    z-index: 100; opacity: 0; pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal-sheet {
+    background: var(--teal);
+    border-radius: 24px 24px 0 0;
+    padding: 28px 24px 48px; width: 100%;
+    transform: translateY(100%);
+    transition: transform 0.25s ease;
+    border-top: 1.5px solid var(--card-border);
+  }
+  .modal-overlay.open .modal-sheet { transform: translateY(0); }
+  .modal-title { font-size: 22px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; text-align: center; margin-bottom: 8px; }
+  .modal-sub { font-size: 14px; color: var(--faint); text-align: center; font-family: 'Barlow', sans-serif; margin-bottom: 28px; }
+  .modal-btns { display: flex; flex-direction: column; gap: 10px; }
+
+  /* coming soon modal */
+  .coming-soon-icon { font-size: 48px; text-align: center; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="screen-home" class="screen active">
+  <div class="home-logo">ROUND<br>ZERO</div>
+  <div class="home-sub">KETTLEBELL TIMER</div>
+  <div class="home-menu">
+    <div class="home-btn" ontouchstart="unlockAudio()" onclick="showScreen('screen-select')">
+      <div class="home-btn-left">
+        <div class="home-btn-title">Quick Start</div>
+        <div class="home-btn-sub">Interval · E.M.O.M. · Calisthenics</div>
+      </div>
+      <div class="home-btn-arrow">›</div>
+    </div>
+    <div class="home-btn" ontouchstart="unlockAudio()" onclick="showLibrary()">
+      <div class="home-btn-left">
+        <div class="home-btn-title">Library</div>
+        <div class="home-btn-sub">Pre-built workouts</div>
+      </div>
+      <div class="home-btn-arrow">›</div>
+    </div>
+    <div class="home-btn" ontouchstart="unlockAudio()" onclick="showFavorites()">
+      <div class="home-btn-left">
+        <div class="home-btn-title">Favorites</div>
+        <div class="home-btn-sub">Your starred workouts</div>
+      </div>
+      <div class="home-btn-arrow">›</div>
+    </div>
+    <div class="home-btn" ontouchstart="unlockAudio()" onclick="showCreate(null)">
+      <div class="home-btn-left">
+        <div class="home-btn-title">Create</div>
+        <div class="home-btn-sub">Build a custom workout</div>
+      </div>
+      <div class="home-btn-arrow">›</div>
+    </div>
+  </div>
+</div>
+
+<!-- SELECT WORKOUT TYPE -->
+<div id="screen-select" class="screen">
+  <div class="header">
+    <button class="header-back" onclick="showScreen('screen-home')">‹</button>
+    <div class="header-title">Quick Start</div>
+    <div style="width:40px"></div>
+  </div>
+  <div class="select-menu">
+    <div class="select-btn" onclick="showScreen('screen-quickstart')">
+      <div class="select-btn-left">
+        <div class="select-btn-title">Interval</div>
+        <div class="select-btn-sub">Work · Rest · Repeat</div>
+      </div>
+      <div class="select-btn-arrow">›</div>
+    </div>
+    <div class="select-btn" onclick="showComingSoon('E.M.O.M.')">
+      <div class="select-btn-left">
+        <div class="select-btn-title">E.M.O.M.</div>
+        <div class="select-btn-sub">Every Minute On the Minute</div>
+      </div>
+      <div class="select-btn-arrow">›</div>
+    </div>
+    <div class="select-btn" onclick="showComingSoon('Calisthenics')">
+      <div class="select-btn-left">
+        <div class="select-btn-title">Calisthenics</div>
+        <div class="select-btn-sub">Bodyweight training</div>
+      </div>
+      <div class="select-btn-arrow">›</div>
+    </div>
+  </div>
+</div>
+
+<!-- LIBRARY -->
+<div id="screen-library" class="screen">
+  <div class="header">
+    <button class="header-back" onclick="showScreen('screen-home')">‹</button>
+    <div class="header-title">Library</div>
+    <div style="width:40px"></div>
+  </div>
+  <div class="random-btn card" onclick="openRandom('library')" style="margin:4px 20px 12px;">
+    <div class="random-die"><div class="die-dot"></div><div class="die-dot"></div><div class="die-dot"></div></div>
+    <span class="random-label">Random Workout</span>
+  </div>
+  <div class="workout-list" id="library-list"></div>
+</div>
+
+<!-- FAVORITES -->
+<div id="screen-favorites" class="screen">
+  <div class="header">
+    <button class="header-back" onclick="showScreen('screen-home')">‹</button>
+    <div class="header-title">Favorites</div>
+    <div style="width:40px"></div>
+  </div>
+  <div class="random-btn card" onclick="openRandom('favorites')" style="margin:4px 20px 12px;">
+    <div class="random-die"><div class="die-dot"></div><div class="die-dot"></div><div class="die-dot"></div></div>
+    <span class="random-label">Random Favorite</span>
+  </div>
+  <div class="workout-list" id="favorites-list"></div>
+</div>
+
+<!-- WORKOUT DETAIL -->
+<div id="screen-detail" class="screen">
+  <div class="header">
+    <button class="header-back" id="detail-back">‹</button>
+    <div class="header-title" id="detail-title"></div>
+    <button class="header-action" id="detail-star" onclick="toggleDetailStar()">☆</button>
+  </div>
+  <div class="detail-params" id="detail-params"></div>
+  <div class="detail-exercises-title">EXERCISES</div>
+  <div class="exercise-list" id="detail-exercises"></div>
+  <div class="detail-total" id="detail-total"></div>
+  <div class="detail-actions">
+    <button class="btn-start" onclick="startWorkout()">START</button>
+    <button class="btn-secondary" onclick="editCurrentWorkout()">EDIT</button>
+    <button class="btn-danger" id="detail-delete-btn" onclick="openDeleteModal()">DELETE</button>
+  </div>
+</div>
+
+<!-- INTERVAL SETUP (Quick Start) -->
+<div id="screen-quickstart" class="screen">
+  <div class="header">
+    <button class="header-back" onclick="showScreen('screen-select')">‹</button>
+    <div class="header-title">Interval</div>
+    <div style="width:40px"></div>
+  </div>
+  <div class="setup-body">
+    <div class="slider-group">
+      <div class="slider-label">Exercises Per Round</div>
+      <div class="slider-value" id="qs-exercises-val">1</div>
+      <input type="range" id="qs-exercises" min="1" max="10" value="1" oninput="sliderBeep();updateQS()">
+    </div>
+    <div class="slider-group">
+      <div class="slider-label">Rounds</div>
+      <div class="slider-value" id="qs-rounds-val">1</div>
+      <input type="range" id="qs-rounds" min="1" max="10" value="1" oninput="sliderBeep();updateQS()">
+    </div>
+    <div class="slider-group">
+      <div class="slider-label">Work Time</div>
+      <div class="slider-value" id="qs-work-val">5<span>s</span></div>
+      <input type="range" id="qs-work" min="1" max="24" value="1" oninput="sliderBeep();updateQS()">
+    </div>
+    <div class="slider-group">
+      <div class="slider-label">Rest Between Exercises</div>
+      <div class="slider-value" id="qs-rest-val">10<span>s</span></div>
+      <input type="range" id="qs-rest" min="2" max="24" value="2" oninput="sliderBeep();updateQS()">
+    </div>
+    <div class="slider-group">
+      <div class="slider-label">Rest Between Rounds</div>
+      <div class="slider-value" id="qs-roundrest-val">10<span>s</span></div>
+      <input type="range" id="qs-roundrest" min="2" max="24" value="2" oninput="sliderBeep();updateQS()">
+    </div>
+    <div class="slider-group">
+      <div class="slider-label">Countdown</div>
+      <div class="countdown-options">
+        <div class="countdown-opt selected" data-val="5" onclick="selectCountdown(this)">5s</div>
+        <div class="countdown-opt" data-val="10" onclick="selectCountdown(this)">10s</div>
+        <div class="countdown-opt" data-val="15" onclick="selectCountdown(this)">15s</div>
+      </div>
+    </div>
+    <div class="setup-total" id="qs-total" style="margin-top:20px">Total: 0:05</div>
+  </div>
+  <div class="setup-footer">
+    <button class="btn-start" onclick="startQuickWorkout()">START</button>
+  </div>
+</div>
+
+<!-- CREATE / EDIT -->
+<div id="screen-create" class="screen">
+  <div class="header">
+    <button class="header-back" id="create-back">‹</button>
+    <div class="header-title" id="create-title">Create</div>
+    <div style="width:40px"></div>
+  </div>
+  <div class="setup-body" id="create-body"></div>
+  <div class="setup-footer">
+    <button class="btn-start" onclick="saveWorkout()">SAVE</button>
+  </div>
+</div>
+
+<!-- DELETE MODAL -->
+<div class="modal-overlay" id="delete-modal">
+  <div class="modal-sheet">
+    <div class="modal-title">Delete Workout?</div>
+    <div class="modal-sub" id="delete-modal-sub"></div>
+    <div class="modal-btns">
+      <button class="btn-danger" onclick="confirmDelete()">Delete</button>
+      <button class="btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- COMING SOON MODAL -->
+<div class="modal-overlay" id="coming-soon-modal">
+  <div class="modal-sheet" style="text-align:center">
+    <div class="coming-soon-icon">🚧</div>
+    <div class="modal-title" id="coming-soon-title">Coming Soon</div>
+    <div class="modal-sub" id="coming-soon-sub"></div>
+    <button class="btn-secondary" onclick="closeComingSoon()">Got It</button>
+  </div>
+</div>
+
+<script>
+// ── AUDIO ─────────────────────────────────────────────────────
+let audioCtx = null;
+function getAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+function unlockAudio() {
+  try { const c = getAudio(); if (c.state === 'suspended') c.resume(); } catch(e) {}
+}
+function sliderBeep() {
+  try {
+    const ctx = getAudio();
+    if (ctx.state === 'suspended') ctx.resume();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.value = 180;
+    gain.gain.setValueAtTime(0.18, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.07);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.07);
+  } catch(e) {}
+}
+
+// ── DATA ──────────────────────────────────────────────────────
+const BUILT_IN = [
+  {id:'push1',name:'Push 1',exercises:5,rounds:4,work:45,rest:15,roundRest:60,exerciseNames:['KB Floor Press','KB Push Press','KB Single Arm Press','KB Tricep Extension','KB Chest Fly']},
+  {id:'push2',name:'Push 2',exercises:6,rounds:4,work:45,rest:15,roundRest:45,exerciseNames:['KB Push Press','KB Arnold Press','KB Close Grip Press','KB Chest Fly','KB Tricep Extension','KB Floor Press']},
+  {id:'push3',name:'Push 3',exercises:5,rounds:5,work:30,rest:10,roundRest:60,exerciseNames:['KB Arnold Press','KB Push Press','KB Skull Crusher','KB Tricep Kickback','KB Single Arm Press']},
+  {id:'pull1',name:'Pull 1',exercises:5,rounds:4,work:45,rest:15,roundRest:60,exerciseNames:['KB Single Arm Row','KB Renegade Row','KB High Pull','KB Bent Over Row','KB Snatch']},
+  {id:'pull2',name:'Pull 2',exercises:6,rounds:4,work:45,rest:15,roundRest:45,exerciseNames:['KB Bent Over Row','KB Upright Row','KB Single Arm Row','KB Snatch','KB High Pull','KB Clean']},
+  {id:'pull3',name:'Pull 3',exercises:5,rounds:5,work:30,rest:10,roundRest:60,exerciseNames:['KB Clean','KB High Pull','KB Renegade Row','KB Single Arm Row','KB Bent Over Row']},
+  {id:'legs1',name:'Legs 1',exercises:5,rounds:4,work:45,rest:15,roundRest:60,exerciseNames:['KB Goblet Squat','KB Romanian Deadlift','KB Swing','KB Lunge','KB Step Up']},
+  {id:'legs2',name:'Legs 2',exercises:6,rounds:4,work:45,rest:15,roundRest:45,exerciseNames:['KB Sumo Squat','KB Single Leg Deadlift','KB Lunge','KB Step Up','KB Swing','KB Jump Squat']},
+  {id:'legs3',name:'Legs 3',exercises:5,rounds:5,work:30,rest:10,roundRest:60,exerciseNames:['KB Swing','KB Goblet Squat','KB Jump Squat','KB Romanian Deadlift','KB Sumo Squat']},
+  {id:'arms1',name:'Arms 1',exercises:5,rounds:4,work:45,rest:15,roundRest:60,exerciseNames:['KB Curl','KB Hammer Curl','KB Tricep Extension','KB Overhead Tricep','KB Skull Crusher']},
+  {id:'arms2',name:'Arms 2',exercises:6,rounds:4,work:45,rest:15,roundRest:45,exerciseNames:['KB Single Arm Curl','KB Skull Crusher','KB Concentration Curl','KB Hammer Curl','KB Tricep Kickback','KB Reverse Curl']},
+  {id:'arms3',name:'Arms 3',exercises:5,rounds:5,work:30,rest:10,roundRest:60,exerciseNames:['KB Hammer Curl','KB Tricep Kickback','KB Reverse Curl','KB Close Grip Press','KB Overhead Tricep']},
+  {id:'shoulders1',name:'Shoulders 1',exercises:5,rounds:4,work:45,rest:15,roundRest:60,exerciseNames:['KB Overhead Press','KB Lateral Raise','KB Front Raise','KB Arnold Press','KB Rear Delt Fly']},
+  {id:'shoulders2',name:'Shoulders 2',exercises:6,rounds:4,work:45,rest:15,roundRest:45,exerciseNames:['KB Arnold Press','KB Upright Row','KB Face Pull','KB Shrug','KB Lateral Raise','KB Push Press']},
+  {id:'shoulders3',name:'Shoulders 3',exercises:5,rounds:5,work:30,rest:10,roundRest:60,exerciseNames:['KB Push Press','KB Lateral Raise','KB Rear Delt Fly','KB Front Raise','KB Shrug']},
+  {id:'back1',name:'Back 1',exercises:5,rounds:4,work:45,rest:15,roundRest:60,exerciseNames:['KB Deadlift','KB Bent Over Row','KB Good Morning','KB Single Arm Row','KB Reverse Fly']},
+  {id:'back2',name:'Back 2',exercises:6,rounds:4,work:45,rest:15,roundRest:45,exerciseNames:['KB Single Arm Row','KB Romanian Deadlift','KB Reverse Fly','KB Shrug','KB Renegade Row','KB Good Morning']},
+  {id:'back3',name:'Back 3',exercises:5,rounds:5,work:30,rest:10,roundRest:60,exerciseNames:['KB Swing','KB Deadlift','KB Renegade Row','KB Good Morning','KB Bent Over Row']},
+  {id:'core1',name:'Core 1',exercises:5,rounds:4,work:45,rest:15,roundRest:60,exerciseNames:['KB Russian Twist','KB Windmill','KB Sit Up & Press','KB Halo','KB Side Bend']},
+  {id:'core2',name:'Core 2',exercises:6,rounds:4,work:45,rest:15,roundRest:45,exerciseNames:['KB Halo','KB Side Bend','KB Dead Bug','KB Turkish Get Up','KB Russian Twist','KB Plank Pull Through']},
+  {id:'core3',name:'Core 3',exercises:5,rounds:5,work:30,rest:10,roundRest:60,exerciseNames:['KB Russian Twist','KB Plank Pull Through','KB Windmill','KB Side Bend','KB Sit Up & Press']},
+  {id:'fullbody1',name:'Full Body 1',exercises:5,rounds:4,work:45,rest:15,roundRest:60,exerciseNames:['KB Swing','KB Goblet Squat','KB Push Press','KB Bent Over Row','KB Turkish Get Up']},
+  {id:'fullbody2',name:'Full Body 2',exercises:6,rounds:4,work:45,rest:15,roundRest:45,exerciseNames:['KB Deadlift','KB Push Press','KB Single Arm Row','KB Goblet Squat','KB High Pull','KB Russian Twist']},
+  {id:'fullbody3',name:'Full Body 3',exercises:5,rounds:5,work:30,rest:10,roundRest:60,exerciseNames:['KB Swing','KB Clean','KB Push Press','KB Lunge','KB Windmill']}
+];
+
+// ── STATE ─────────────────────────────────────────────────────
+let favorites = JSON.parse(localStorage.getItem('rz_favorites') || '[]');
+let customWorkouts = JSON.parse(localStorage.getItem('rz_custom') || '[]');
+let currentWorkout = null;
+let detailFromScreen = 'screen-library';
+let editingWorkoutId = null;
+let editingIsBuiltIn = false;
+let qsCountdown = 5;
+
+function saveFavorites() { localStorage.setItem('rz_favorites', JSON.stringify(favorites)); }
+function saveCustom() { localStorage.setItem('rz_custom', JSON.stringify(customWorkouts)); }
+function allWorkouts() { return [...BUILT_IN, ...customWorkouts]; }
+function isBuiltIn(id) { return BUILT_IN.some(w => w.id === id); }
+
+// ── NAV ───────────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(id);
+  el.classList.add('active');
+  el.scrollTop = 0;
+}
+
+// ── COMING SOON ───────────────────────────────────────────────
+function showComingSoon(name) {
+  document.getElementById('coming-soon-title').textContent = name;
+  document.getElementById('coming-soon-sub').textContent = `${name} mode is on its way. Check back soon!`;
+  document.getElementById('coming-soon-modal').classList.add('open');
+}
+function closeComingSoon() {
+  document.getElementById('coming-soon-modal').classList.remove('open');
+}
+
+// ── LIBRARY ───────────────────────────────────────────────────
+function showLibrary() { renderList('library-list', allWorkouts(), 'screen-library'); showScreen('screen-library'); }
+function showFavorites() { renderList('favorites-list', allWorkouts().filter(w => favorites.includes(w.id)), 'screen-favorites'); showScreen('screen-favorites'); }
+
+function renderList(containerId, workouts, fromScreen) {
+  const el = document.getElementById(containerId);
+  if (!workouts.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-text">No workouts here yet</div></div>`;
+    return;
+  }
+  el.innerHTML = workouts.map(w => {
+    const starred = favorites.includes(w.id);
+    return `
+      <div class="workout-card card" onclick="openDetail('${w.id}','${fromScreen}')">
+        <div style="flex:1">
+          <div class="workout-card-name">${w.name}</div>
+          <div class="workout-card-meta">${w.rounds} rounds · ${w.exercises} exercises · ${formatTime(calcTotal(w))}</div>
+        </div>
+        <div class="workout-card-right">
+          <button class="star-btn" onclick="event.stopPropagation();toggleStar('${w.id}','${containerId}','${fromScreen}')">${starred?'★':'☆'}</button>
+          <span class="card-arrow">›</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function toggleStar(id, containerId, fromScreen) {
+  if (favorites.includes(id)) favorites = favorites.filter(f => f !== id);
+  else favorites.push(id);
+  saveFavorites();
+  const isFav = containerId === 'favorites-list';
+  renderList(containerId, isFav ? allWorkouts().filter(w => favorites.includes(w.id)) : allWorkouts(), fromScreen);
+  if (currentWorkout && currentWorkout.id === id) updateDetailStar();
+}
+
+function openRandom(source) {
+  const pool = source === 'favorites' ? allWorkouts().filter(w => favorites.includes(w.id)) : allWorkouts();
+  if (!pool.length) return;
+  openDetail(pool[Math.floor(Math.random()*pool.length)].id, source === 'favorites' ? 'screen-favorites' : 'screen-library');
+}
+
+// ── DETAIL ────────────────────────────────────────────────────
+function openDetail(id, fromScreen) {
+  const w = allWorkouts().find(x => x.id === id);
+  if (!w) return;
+  currentWorkout = w;
+  detailFromScreen = fromScreen;
+  document.getElementById('detail-title').textContent = w.name;
+  document.getElementById('detail-back').onclick = () => showScreen(fromScreen);
+  document.getElementById('detail-params').innerHTML = [
+    ['Rounds', w.rounds], ['Exercises', w.exercises],
+    ['Work Time', w.work + 's'], ['Rest', w.rest + 's'], ['Round Rest', w.roundRest + 's']
+  ].map(([l,v]) => `<div class="param-row card"><span class="param-label">${l}</span><span class="param-value">${v}</span></div>`).join('');
+  document.getElementById('detail-exercises').innerHTML = w.exerciseNames.map((n,i) =>
+    `<div class="exercise-row card"><span class="exercise-num">${i+1}</span><span class="exercise-name">${n}</span></div>`).join('');
+  document.getElementById('detail-total').textContent = `Total: ${formatTime(calcTotal(w))}`;
+
+  // Delete only available on custom workouts
+  document.getElementById('detail-delete-btn').style.display = isBuiltIn(id) ? 'none' : '';
+
+  updateDetailStar();
+  showScreen('screen-detail');
+}
+
+function updateDetailStar() {
+  const btn = document.getElementById('detail-star');
+  btn.textContent = (currentWorkout && favorites.includes(currentWorkout.id)) ? '★' : '☆';
+}
+function toggleDetailStar() {
+  if (!currentWorkout) return;
+  toggleStar(currentWorkout.id, detailFromScreen === 'screen-favorites' ? 'favorites-list' : 'library-list', detailFromScreen);
+}
+function startWorkout() { alert('Timer coming next! 💪'); }
+function editCurrentWorkout() { if (currentWorkout) showCreate(currentWorkout); }
+
+// ── DELETE ────────────────────────────────────────────────────
+function openDeleteModal() {
+  document.getElementById('delete-modal-sub').textContent = `"${currentWorkout.name}" will be permanently removed.`;
+  document.getElementById('delete-modal').classList.add('open');
+}
+function closeDeleteModal() { document.getElementById('delete-modal').classList.remove('open'); }
+function confirmDelete() {
+  customWorkouts = customWorkouts.filter(w => w.id !== currentWorkout.id);
+  favorites = favorites.filter(f => f !== currentWorkout.id);
+  saveCustom(); saveFavorites(); closeDeleteModal();
+  if (detailFromScreen === 'screen-favorites') showFavorites(); else showLibrary();
+}
+
+// ── CREATE / EDIT ─────────────────────────────────────────────
+function showCreate(workout) {
+  // If editing a built-in, we'll save a new custom copy
+  editingIsBuiltIn = workout ? isBuiltIn(workout.id) : false;
+  editingWorkoutId = (workout && !editingIsBuiltIn) ? workout.id : null;
+
+  document.getElementById('create-title').textContent = workout ? 'Edit' : 'Create';
+  document.getElementById('create-back').onclick = () =>
+    workout ? showScreen('screen-detail') : showScreen('screen-home');
+
+  const w = workout || {name:'', exercises:1, rounds:1, work:5, rest:10, roundRest:10, exerciseNames:[]};
+
+  let exInputs = '';
+  for (let i = 0; i < 10; i++) {
+    exInputs += `<div class="exercise-row card" id="ex-row-${i}" style="display:${i<w.exercises?'flex':'none'}">
+      <span class="exercise-num">${i+1}</span>
+      <input id="ex-name-${i}" type="text" value="${w.exerciseNames[i]||''}" class="ex-input" placeholder="EXERCISE NAME">
+    </div>`;
+  }
+
+  document.getElementById('create-body').innerHTML = `
+    <div class="slider-group">
+      <div class="slider-label">Workout Name</div>
+      <input id="create-name" type="text" value="${w.name}" class="create-name-input" placeholder="WORKOUT NAME">
+    </div>
+    <div class="slider-group">
+      <div class="slider-label">Exercises Per Round</div>
+      <div class="slider-value" id="cr-exercises-val">${w.exercises}</div>
+      <input type="range" id="cr-exercises" min="1" max="10" value="${w.exercises}" oninput="sliderBeep();updateCreate()">
+    </div>
+    <div class="slider-group">
+      <div class="slider-label">Rounds</div>
+      <div class="slider-value" id="cr-rounds-val">${w.rounds}</div>
+      <input type="range" id="cr-rounds" min="1" max="10" value="${w.rounds}" oninput="sliderBeep();updateCreate()">
+    </div>
+    <div class="slider-group">
+      <div class="slider-label">Work Time</div>
+      <div class="slider-value" id="cr-work-val">${w.work}<span>s</span></div>
+      <input type="range" id="cr-work" min="1" max="24" value="${Math.max(1,Math.round(w.work/5))}" oninput="sliderBeep();updateCreate()">
+    </div>
+    <div class="slider-group">
+      <div class="slider-label">Rest Between Exercises</div>
+      <div class="slider-value" id="cr-rest-val">${w.rest}<span>s</span></div>
+      <input type="range" id="cr-rest" min="2" max="24" value="${Math.max(2,Math.round(w.rest/5))}" oninput="sliderBeep();updateCreate()">
+    </div>
+    <div class="slider-group">
+      <div class="slider-label">Rest Between Rounds</div>
+      <div class="slider-value" id="cr-roundrest-val">${w.roundRest}<span>s</span></div>
+      <input type="range" id="cr-roundrest" min="2" max="24" value="${Math.max(2,Math.round(w.roundRest/5))}" oninput="sliderBeep();updateCreate()">
+    </div>
+    <div class="slider-group">
+      <div class="slider-label">Exercise Names</div>
+      <div style="display:flex;flex-direction:column;gap:8px">${exInputs}</div>
+    </div>
+    <div class="setup-total" id="cr-total" style="margin-top:8px"></div>
+  `;
+  updateCreate();
+  showScreen('screen-create');
+}
+
+function updateCreate() {
+  const e = +document.getElementById('cr-exercises').value;
+  const r = +document.getElementById('cr-rounds').value;
+  const w = +document.getElementById('cr-work').value * 5;
+  const rs = +document.getElementById('cr-rest').value * 5;
+  const rr = +document.getElementById('cr-roundrest').value * 5;
+  document.getElementById('cr-exercises-val').textContent = e;
+  document.getElementById('cr-rounds-val').textContent = r;
+  document.getElementById('cr-work-val').innerHTML = `${w}<span>s</span>`;
+  document.getElementById('cr-rest-val').innerHTML = `${rs}<span>s</span>`;
+  document.getElementById('cr-roundrest-val').innerHTML = `${rr}<span>s</span>`;
+  for (let i = 0; i < 10; i++) { const row = document.getElementById(`ex-row-${i}`); if (row) row.style.display = i < e ? 'flex' : 'none'; }
+  document.getElementById('cr-total').textContent = `Total: ${formatTime(calcTotalRaw(e,r,w,rs,rr))}`;
+}
+
+function saveWorkout() {
+  const name = document.getElementById('create-name').value.trim();
+  if (!name) { alert('Please enter a workout name'); return; }
+  const e = +document.getElementById('cr-exercises').value;
+  const r = +document.getElementById('cr-rounds').value;
+  const w = +document.getElementById('cr-work').value * 5;
+  const rs = +document.getElementById('cr-rest').value * 5;
+  const rr = +document.getElementById('cr-roundrest').value * 5;
+  const exerciseNames = [];
+  for (let i = 0; i < e; i++) {
+    const inp = document.getElementById(`ex-name-${i}`);
+    exerciseNames.push(inp ? inp.value.trim() || `Exercise ${i+1}` : `Exercise ${i+1}`);
+  }
+
+  if (editingWorkoutId && !editingIsBuiltIn) {
+    // Update existing custom workout
+    const idx = customWorkouts.findIndex(x => x.id === editingWorkoutId);
+    if (idx !== -1) {
+      customWorkouts[idx] = {...customWorkouts[idx], name, exercises:e, rounds:r, work:w, rest:rs, roundRest:rr, exerciseNames};
+      saveCustom();
+      currentWorkout = customWorkouts[idx];
+      openDetail(editingWorkoutId, detailFromScreen);
+      return;
+    }
+  }
+
+  // New custom workout (or edited copy of a built-in)
+  const nw = {id:'custom_'+Date.now(), name, exercises:e, rounds:r, work:w, rest:rs, roundRest:rr, exerciseNames};
+  customWorkouts.push(nw);
+  saveCustom();
+  showLibrary();
+}
+
+// ── QUICK START ───────────────────────────────────────────────
+function updateQS() {
+  const e = +document.getElementById('qs-exercises').value;
+  const r = +document.getElementById('qs-rounds').value;
+  const w = +document.getElementById('qs-work').value * 5;
+  const rs = +document.getElementById('qs-rest').value * 5;
+  const rr = +document.getElementById('qs-roundrest').value * 5;
+  document.getElementById('qs-exercises-val').textContent = e;
+  document.getElementById('qs-rounds-val').textContent = r;
+  document.getElementById('qs-work-val').innerHTML = `${w}<span>s</span>`;
+  document.getElementById('qs-rest-val').innerHTML = `${rs}<span>s</span>`;
+  document.getElementById('qs-roundrest-val').innerHTML = `${rr}<span>s</span>`;
+  document.getElementById('qs-total').textContent = `Total: ${formatTime(calcTotalRaw(e,r,w,rs,rr))}`;
+}
+function selectCountdown(el) {
+  document.querySelectorAll('.countdown-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  qsCountdown = parseInt(el.dataset.val);
+}
+function startQuickWorkout() { alert('Timer coming next! 💪'); }
+
+// ── HELPERS ───────────────────────────────────────────────────
+function calcTotal(w) { return calcTotalRaw(w.exercises, w.rounds, w.work, w.rest, w.roundRest); }
+function calcTotalRaw(e, r, w, rs, rr) { return (e*w + (e-1)*rs)*r + (r-1)*rr; }
+function formatTime(sec) { const m = Math.floor(sec/60), s = sec%60; return `${m}:${s.toString().padStart(2,'0')}`; }
+
+updateQS();
+</script>
+</body>
+</html>
